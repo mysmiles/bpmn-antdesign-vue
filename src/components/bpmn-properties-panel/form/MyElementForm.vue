@@ -1,17 +1,5 @@
 <template>
   <div class="panel-tab__content">
-<!--    <a-form-model size="small" :label-col="labelCol" :wrapper-col="wrapperCol" @submit.native.prevent>
-      <a-form-model-item label="表单标识">
-        <a-input v-model="formKey" allowClear @change="updateElementFormKey" />
-      </a-form-model-item>
-      <a-form-model-item label="业务标识">
-        <a-select v-model="businessKey" @change="updateElementBusinessKey">
-          <a-select-option v-for="i in fieldList" :key="i.id" :value="i.id">{{ i.label }}</a-select-option>
-          <a-select-option value="null">无</a-select-option>
-        </a-select>
-      </a-form-model-item>
-    </a-form-model>-->
-
     <!--字段列表-->
     <div class="element-property list-property">
       <a-divider><a-icon type="profile" /> 表单</a-divider>
@@ -36,27 +24,37 @@
     <a-modal :visible="formListDialogVisible" title="表单库" width="600px" :maskClosable="false" destroy-on-close @cancel="formListDialogVisible = false">
       <a-form-model layout="inline" :model="searchForm" class="demo-form-inline" style="margin-bottom: 15px">
         <a-form-model-item>
-          <a-input v-model="searchForm.name" placeholder="表单名称"></a-input>
+          <a-input v-model="searchForm.searchName" placeholder="表单名称"></a-input>
         </a-form-model-item>
         <a-form-model-item>
-          <a-select v-model="searchForm.type" style="width: 180px" placeholder="表单类别">
-            <a-select-option value="默认类别">默认类别</a-select-option>
-            <a-select-option value="新增类别">新增类别</a-select-option>
+          <a-select v-model="searchForm.searchType" style="width: 180px" placeholder="表单类别" allow-clear>
+            <a-select-option v-for="c in categoryList" :value="c.code" :key="c.id">{{ c.description }}</a-select-option>
           </a-select>
         </a-form-model-item>
         <a-form-model-item>
-          <a-button type="primary" @click="onSubmit">查询</a-button>
+          <a-button type="primary" @click="onSubmit(true)">查询</a-button>
         </a-form-model-item>
       </a-form-model>
       <h-table
-        :data-source="formList"
+        :data-source="formList.content"
         size="small"
         ref="formListTable"
         bordered
-        rowKey="id"
+        rowKey="filed"
         :columns="formColumns"
         :scroll="{ y: 240 }"
         :rowSelection="{ selectedRowKeys: selectFormIds, selectedRows: selectForms, onChange: handleSelectionChange }"
+        :pagination="{
+          current: searchForm.pageNumber + 1,
+          pageSize: searchForm.pageSize,
+          showSizeChanger: true,
+          showTotal: (total) => `共 ${total} 条`,
+          total: formList.totalElements,
+          onChange: (pageNumber, pageSize) => {
+            Object.assign(this.searchForm, { pageNumber: pageNumber - 1, pageSize })
+            this.onSubmit()
+          }
+        }"
       >
       </h-table>
       <template slot="footer">
@@ -70,7 +68,7 @@
         size="small"
         ref="fieldListTable"
         :scroll="{ y: 240 }"
-        rowKey="name"
+        rowKey="id"
         :columns="fieldColumns"
         bordered
       >
@@ -90,6 +88,7 @@
 </template>
 
 <script>
+
 const taskFormColumns = [
   {
     title: '序号',
@@ -128,30 +127,30 @@ const formColumns = [
   },
   {
     title: '分类',
-    dataIndex: 'type',
-    key: 'type',
+    dataIndex: 'type.name',
+    key: 'type.name',
     ellipsis: true,
     showOverflowTooltip: true,
     minWidth: '100px',
-    scopedSlots: { customRender: 'type' },
+    scopedSlots: { customRender: 'type.name' },
   }
 ]
 const fieldColumns = [
   {
     title: '字段名',
-    dataIndex: 'name',
-    key: 'name',
+    dataIndex: 'filed',
+    key: 'filed',
     ellipsis: true,
     showOverflowTooltip: true,
     scopedSlots: { customRender: 'name' },
   },
   {
     title: '注释',
-    dataIndex: 'comment',
-    key: 'comment',
+    dataIndex: 'filedNote',
+    key: 'filedNote',
     ellipsis: true,
     showOverflowTooltip: true,
-    scopedSlots: { customRender: 'comment' },
+    scopedSlots: { customRender: 'filedNote' },
   },
   {
     title: '启用',
@@ -166,6 +165,10 @@ const fieldColumns = [
     scopedSlots: { customRender: 'isShow' },
   }
 ]
+Object.freeze(taskFormColumns)
+Object.freeze(formColumns)
+Object.freeze(fieldColumns)
+
 export default {
   name: "ElementForm",
   props: {
@@ -183,35 +186,22 @@ export default {
       taskFormColumns,
       formColumns,
       fieldColumns,
-      searchForm:{},
+      searchForm:{
+        pageNumber: 0,
+        pageSize: 20
+      },
       formKey: "",
       businessKey: "",
       optionModelTitle: "",
-      fieldList: [
-        {name:'id',comment:"id",isDisabled:1,isShow:1},
-        {name:'NAME',comment:"名称",isDisabled:1,isShow:1},
-        {name:'DEPARTMENT',comment:"部门",isDisabled:1,isShow:1},
-        {name:'PHONE',comment:"电话",isDisabled:1,isShow:1},
-        {name:'ADDRESS',comment:"地址",isDisabled:1,isShow:1},
-        {name:'COMMNET',comment:"备注",isDisabled:1,isShow:1}
-      ],
-      formList:[
-        {id:"123",name:"测试表单1",type:"默认分类"},
-        {id:"1234",name:"测试表单2",type:"默认分类"},
-        {id:"12345",name:"测试表单3",type:"默认分类"}
-      ],
+      fieldList: [],
+      formList: {
+        content: [],
+        totalElements: 0
+      },
       taskFormList:[],
       formFieldForm: {},
       selectForms:[],
       selectFormIds:[],
-      fieldType: {
-        long: "长整型",
-        string: "字符串",
-        boolean: "布尔类",
-        date: "日期类",
-        enum: "枚举类",
-        custom: "自定义类型"
-      },
       formFieldIndex: -1, // 编辑中的字段， -1 为新增
       formFieldOptionIndex: -1, // 编辑中的字段配置项， -1 为新增
       fieldModelVisible: false,
@@ -222,7 +212,8 @@ export default {
       fieldOptionType: "", // 当前激活的字段配置项弹窗 类型
       fieldEnumList: [], // 枚举值列表
       fieldConstraintsList: [], // 约束条件列表
-      fieldPropertiesList: [] // 绑定属性列表
+      fieldPropertiesList: [], // 绑定属性列表
+      categoryList: []
     };
   },
   watch: {
@@ -233,8 +224,24 @@ export default {
       }
     }
   },
+  mounted() {
+    this.loadFormCategory()
+  },
   methods: {
-    onSubmit() {
+    loadFormCategory() {
+      this.$api.listDictionaries({ pageNumber: 0, pageSize: 100, searchType: 'FORM-TYPE' }).then(resp => {
+        this.categoryList = resp.data.content || []
+      })
+    },
+    onSubmit(isFirst) {
+      if (isFirst) {
+        this.searchForm.pageNumber = this.$options.data.call(this).searchForm.pageNumber
+      }
+      this.$api.listFormDefinition({ ...this.searchForm }).then(resp => {
+        this.formList = resp.data
+      }).catch(e => {
+        this.$message.error(e.response.message || '查询失败');
+      }).finally()
       console.log('查询表单');
     },
     resetFormList() {
@@ -278,6 +285,8 @@ export default {
     // },
     openFormDialog(){
         this.formListDialogVisible = true;
+        this.searchForm = this.$options.data.call(this).searchForm
+        this.onSubmit()
     },
     updateElementFormKey() {
       window.bpmnInstances.modeling.updateProperties(this.bpmnELement, { formKey: this.formKey });
@@ -300,10 +309,6 @@ export default {
       this.taskFormList = this.taskFormList.concat(newSelect);
       let newFormsObjects = [];
       newSelect.forEach(f => {
-      //   f.values = [];
-      //   this.fieldList.forEach(o => {
-      // f.values.push(window.bpmnInstances.moddle.create(`${this.prefix}:Field`, o));
-      // });
       newFormsObjects.push(window.bpmnInstances.moddle.create(`${this.prefix}:Form`, f));
       });
       // 新建一个属性字段的保存列表
@@ -338,51 +343,55 @@ export default {
       this.selectForms = selectedRows;
       this.selectFormIds = selectedRowKeys;
     },
-    // 打开字段详情侧边栏
-    // openFieldForm(field, index) {
-    //   this.formFieldIndex = index;
-    //   if (index !== -1) {
-    //     const FieldObject = this.formData.fields[index];
-    //     this.formFieldForm = JSON.parse(JSON.stringify(field));
-    //     // 设置自定义类型
-    //     this.$set(this.formFieldForm, "typeType", !this.fieldType[field.type] ? "custom" : field.type);
-    //     // 初始化枚举值列表
-    //     field.type === "enum" && (this.fieldEnumList = JSON.parse(JSON.stringify(FieldObject?.values || [])));
-    //     // 初始化约束条件列表
-    //     this.fieldConstraintsList = JSON.parse(JSON.stringify(FieldObject?.validation?.constraints || []));
-    //     // 初始化自定义属性列表
-    //     this.fieldPropertiesList = JSON.parse(JSON.stringify(FieldObject?.properties?.values || []));
-    //   } else {
-    //     this.formFieldForm = {};
-    //     // 初始化枚举值列表
-    //     this.fieldEnumList = [];
-    //     // 初始化约束条件列表
-    //     this.fieldConstraintsList = [];
-    //     // 初始化自定义属性列表
-    //     this.fieldPropertiesList = [];
-    //   }
-    //   this.fieldModelVisible = true;
-    // },
-
     openFieldForm(field, index) {
       this.formFieldIndex = index;
-      // if (index !== -1) {
-      //   const FieldObject = this.formData.fields[index];
-      //   this.formFieldForm = JSON.parse(JSON.stringify(field));
-      //   // 设置自定义类型
-      //   this.$set(this.formFieldForm, "typeType", !this.fieldType[field.type] ? "custom" : field.type);
-      //   // 初始化枚举值列表
-      //   field.type === "enum" && (this.fieldEnumList = JSON.parse(JSON.stringify(FieldObject?.values || [])));
-      //   // 初始化约束条件列表
-      //   this.fieldConstraintsList = JSON.parse(JSON.stringify(FieldObject?.validation?.constraints || []));
-      //   // 初始化自定义属性列表
-      //   this.fieldPropertiesList = JSON.parse(JSON.stringify(FieldObject?.properties?.values || []));
-      // } else {
-      //   this.formFieldForm = {}; 
-      // }
       this.fieldDialogVisible = true;
+      this.$api.loadFormDefinitionById({ id: field.id }).then(resp => {
+        const parseJson = JSON.parse(resp.data.json);
+        const newArray = [];
+        function childrenFilter(obj) {
+          if (obj == null || '') {
+            return;
+          }
+          Object.keys(obj).forEach(key => {
+            if (key === 'model') {
+              newArray.push({
+                filed: `${obj[key]}`,
+                isDisabled: 0,
+                isShow: 0,
+                formId: field.id,
+                filedNote: `${obj.label}`
+              });
+            }
+            if (typeof (obj[key]) === 'object') {
+              childrenFilter(obj[key]);
+            }
+          });
+        }
+        childrenFilter(parseJson);
+        this.fieldList = newArray;
+        if (field.formDefJson) {
+          this.selectCheckFiled(field.formDefJson);
+        }
+      }).catch(e => {
+        this.$message.error(e.response.data.message || '查询失败');
+      }).finally(() => {
+        this.filedPermissionSpinning = false;
+      })
     },
-    // 打开字段 某个 配置项 弹窗
+    /**
+     * @method 读取返回的数据的字段选中的并且标上
+     * @desc 解释说明
+     * @return {type} 无返回
+     */
+    selectCheckFiled(json) {
+      const parseJson = JSON.parse(json);
+      Object.keys(parseJson).forEach(key => {
+        const data = this.fieldList.find(item => item.filed === key);
+        Object.assign(data, parseJson[key]);
+      });
+    },
+    /*// 打开字段 某个 配置项 弹窗
     openFieldOptionForm(option, index, type) {
       this.fieldOptionModelVisible = true;
       this.fieldOptionType = type;
@@ -418,7 +427,7 @@ export default {
       }
       this.fieldOptionModelVisible = false;
       this.fieldOptionForm = {};
-    },
+    },*/
     // 保存字段配置
     saveField() {
       const { id, type, label, defaultValue, datePattern } = this.formFieldForm;
@@ -459,22 +468,41 @@ export default {
 
   // 保存字段配置
     saveFields() {
-      let newFieldsObjects = [];
-        this.fieldList.forEach(f => {
-        newFieldsObjects.push(window.bpmnInstances.moddle.create(`${this.prefix}:FormField`, f));
-        }); 
-    //  this.bpmnElementForms[0].values[this.formFieldIndex].values=newFieldsObjects;
-
-    //     console.log("this.bpmnElementForms", this.bpmnElementForms,this.formFieldIndex);
-    //   this.updateElementExtensions(this.bpmnElementForms);
-    this.bpmnElementFormList[this.formFieldIndex].values = newFieldsObjects;
-    const propertiesObject = window.bpmnInstances.moddle.create(`${this.prefix}:Forms`, {
-        values: this.bpmnElementFormList
+      const parmaObj = {};
+      let formId = '';
+      const filterArr = this.fieldList.filter(item => {
+        return item.isDisabled || item.isShow;
       });
-    this.updateElementExtensions(propertiesObject);          
+      if (filterArr.length > 0) {
+        filterArr.forEach(item => {
+          formId = item.formId;
+          parmaObj[item.filed] = {};
+          if (item.isDisabled) {
+            Object.assign(parmaObj[item.filed], { 'isDisabled': 1 });
+          }
+          if (item.isShow) {
+            Object.assign(parmaObj[item.filed], { 'isShow': 1 });
+          }
+        });
+        const configFormIndex = this.taskFormList.findIndex(i => i.id === formId);
+        Object.assign(this.taskFormList[configFormIndex], { formDefJson: JSON.stringify(parmaObj) });
+      } else {
+        formId = this.fieldList[0] ? this.fieldList[0].formId : '';
+        const configFormIndex = this.taskFormList.findIndex(i => i.id === formId);
+        Object.assign(this.taskFormList[configFormIndex], { formDefJson: '' });
+      }
 
-    this.fieldDialogVisible = false;
-     // this.resetFormList();
+      let newFieldsObjects = [];
+      filterArr.forEach(f => {
+        newFieldsObjects.push(window.bpmnInstances.moddle.create(`${this.prefix}:FormField`, f));
+      });
+      this.bpmnElementFormList[this.formFieldIndex].values = newFieldsObjects;
+      const propertiesObject = window.bpmnInstances.moddle.create(`${this.prefix}:Forms`, {
+          values: this.bpmnElementFormList
+        });
+      this.updateElementExtensions(propertiesObject);
+
+      this.fieldDialogVisible = false;
     },
     // 移除某个 字段的 配置项
     removeFieldOptionItem(option, index, type) {
@@ -502,16 +530,6 @@ export default {
         extensionElements: extensions
       });
     }
-    // updateElementExtensions() {
-    //   // 更新回扩展元素
-    //   const newElExtensionElements = window.bpmnInstances.moddle.create(`bpmn:ExtensionElements`, {
-    //     values: this.otherExtensions.concat(this.formData)
-    //   });
-    //   // 更新到元素上
-    //   window.bpmnInstances.modeling.updateProperties(this.bpmnELement, {
-    //     extensionElements: newElExtensionElements
-    //   });
-    // }
   }
 };
 </script>

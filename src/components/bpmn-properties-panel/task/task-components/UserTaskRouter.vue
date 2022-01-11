@@ -11,11 +11,35 @@
     <a-form-model size="small" :model="userTaskForm" :rules="rules" :label-col="labelCol" :wrapper-col="wrapperCol" @submit.native.prevent>
       <a-form-model-item label="候选人方案" prop="assigneeRouter" :rules="{ required: true, message: '请选择候选人方案', trigger: ['change'] }">
         <a-select v-model="userTaskForm.assigneeRouter" @change="updateElementTask('assigneeRouter')">
-          <a-select-option v-for="rt in routerTypes" :key="rt.value" :value="rt.value">{{ rt.label }}</a-select-option>
+          <a-select-option v-for="rt in routerTypes" :key="rt.value" :value="rt.value">
+            方案{{ rt.value }}：{{ rt.name }}
+          </a-select-option>
         </a-select>
       </a-form-model-item>
-      <a-form-model-item label="参数" ref="assignee" prop="assignee" :rules="{ required: true, message: '请选择参数', trigger: ['blur', 'change'] }" :autoLink="false">
-         <a-col :span="16">
+      <a-form-model-item  v-if="userTaskForm.assigneeRouter !== 6" label="参数" ref="assignee" prop="assignee" :rules="{ required: true, message: '请选择参数', trigger: ['blur', 'change'] }" :autoLink="false">
+
+        <div v-if="userTaskForm.assigneeRouter === 1">
+          <transfer-tree :value="userTaskForm.assignee" @change="(val) => {this.userTaskForm.assignee = val; this.updateElementTask('assignee')}" />
+        </div>
+        <div v-else-if="userTaskForm.assigneeRouter === 2">
+          <roles-select :value="userTaskForm.assignee" @change="(val) => {this.userTaskForm.assignee = val; this.updateElementTask('assignee')}" />
+        </div>
+        <div v-else-if="userTaskForm.assigneeRouter === 3">
+          <organization-select :value="userTaskForm.assignee" @change="(val) => {this.userTaskForm.assignee = val; this.updateElementTask('assignee')}" />
+        </div>
+        <div v-else-if="userTaskForm.assigneeRouter === 4">
+          <department-select :value="userTaskForm.assignee" @change="(val) => {this.userTaskForm.assignee = val; this.updateElementTask('assignee')}" />
+        </div>
+        <div v-else-if="userTaskForm.assigneeRouter === 5">
+          <!--todo: 这个 procDefId 和 id从哪里来-->
+          <progress-task-key-select :value="userTaskForm.assignee" @change="(val) => {this.userTaskForm.assignee = val; this.updateElementTask('assignee')}" :procDefId="procDefId" :id="id" />
+        </div>
+        <div v-else>
+          <a-input v-model="userTaskForm.assignee" />
+        </div>
+
+
+<!--         <a-col :span="16">
            <a-input
              v-model="userTaskForm.assignee"
              allowClear
@@ -25,7 +49,8 @@
          </a-col>
          <a-col :span="4">
            <a-button style="margin-left: 20px" type="primary" @click="openUserForm">选择</a-button>
-         </a-col>
+         </a-col>-->
+
       </a-form-model-item>
       <a-form-model-item label="历史办理者优先">
         <h-switch v-model="userTaskForm.assigneeHistoryFirst" @change="updateElementTask('assigneeHistoryFirst')" />
@@ -88,6 +113,7 @@
 </template>
 
 <script>
+import { TransferTree, DepartmentSelect, OrganizationSelect, ProgressTaskKeySelect, RolesSelect } from '@/components/HComponents/index'
 const userColumns = [
   {
     title: '名称',
@@ -153,33 +179,7 @@ export default {
       ],
       selectUsers:[],
       selectUsersIds:[],
-      mockData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-      routerTypes:[
-        {
-          label:"方案1：按人员",
-          value:1
-        },
-        {
-          label:"方案2：按角色",
-          value:2
-        },
-        {
-          label:"方案3：按组织机构",
-          value:3
-        },
-        {
-          label:"方案4：按指定节点办理人",
-          value:4
-        },
-        {
-          label:"方案5：按创建者",
-          value:5
-        },
-        {
-          label:"方案99：自定义用户查询信息",
-          value:99
-        } 
-      ],
+      routerTypes:[],
       rules: {
         maxAssigneeNum: [{ validator: isGreater, trigger: ['change', 'blur'] }],
         minAssigneeNum: [{ validator: isSmaller, trigger: 'change' }],
@@ -195,7 +195,19 @@ export default {
       }
     }
   },
+  components: {
+    TransferTree,
+    DepartmentSelect,
+    OrganizationSelect,
+    ProgressTaskKeySelect,
+    RolesSelect
+  },
   methods: {
+    loadDict() {
+      this.$api.listEnumsByType({ types: 'CandidateRouter' }).then(res => {
+        this.routerTypes = res.data[0].items;
+      });
+    },
     updateBaseInfo(key) {
       console.log(key)
     },
@@ -238,6 +250,9 @@ export default {
   },
   beforeDestroy() {
     this.bpmnElement = null;
+  },
+  mounted() {
+    this.loadDict()
   }
 };
 </script>

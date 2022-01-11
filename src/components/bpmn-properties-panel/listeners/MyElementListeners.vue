@@ -175,24 +175,36 @@
         <a-form-model-item>
           <a-input v-model="searchForm.name" placeholder="脚本名称"></a-input>
         </a-form-model-item>
-        <a-form-model-item>
+<!--        <a-form-model-item>
           <a-select style="width: 180px" v-model="searchForm.type" placeholder="脚本类别">
             <a-select-option value="默认类别">默认类别</a-select-option>
             <a-select-option value="新增类别">新增类别</a-select-option>
           </a-select>
-        </a-form-model-item>
+        </a-form-model-item>-->
         <a-form-model-item>
-          <a-button type="primary" @click="onSubmit">查询</a-button>
+          <a-button type="primary" @click="onSubmit(true)">查询</a-button>
         </a-form-model-item>
       </a-form>
       <h-table
-        :data-source="groovyList"
+        :data-source="groovyList.content"
         ref="groovyListTable"
+        size="small"
         :scroll="{ y: 240 }"
         bordered
         rowKey="id"
         :columns="groovyColumns"
         :rowSelection="{ selectedRowKeys: selectIds, selectedRows: selects, onChange: handleGroovyListSelectionChange, type: 'radio'}"
+        :pagination="{
+          current: searchForm.pageNumber + 1,
+          pageSize: searchForm.pageSize,
+          showSizeChanger: true,
+          showTotal: (total) => `共 ${total} 条`,
+          total: groovyList.totalElements,
+          onChange: (pageNumber, pageSize) => {
+            Object.assign(this.searchForm, { pageNumber: pageNumber - 1, pageSize })
+            this.onSubmit()
+          }
+        }"
       >
       </h-table>
       <template slot="footer">
@@ -205,6 +217,7 @@
 <script>
 import { createListenerObject, updateElementExtensions } from "../../utils";
 import { initListenerType, initListenerForm, listenerType, fieldType } from "./utilSelf";
+import moment from 'moment';
 
 const groovyColumns = [
   {
@@ -216,20 +229,24 @@ const groovyColumns = [
     scopedSlots: { customRender: 'true' },
   },
   {
-    title: '分类',
-    dataIndex: 'type',
-    key: 'type',
+    title: 'code',
+    dataIndex: 'code',
+    key: 'code',
     ellipsis: true,
     showOverflowTooltip: true,
-    scopedSlots: { customRender: 'type' },
+    scopedSlots: { customRender: 'code' },
   },
   {
     title: '创建时间',
-    dataIndex: 'createtime',
-    key: 'createtime',
+    dataIndex: 'createTime',
+    key: 'createTime',
     ellipsis: true,
     showOverflowTooltip: true,
-    scopedSlots: { customRender: 'createtime' },
+    scopedSlots: { customRender: 'createTime' },
+    customRender: (text) => {
+      if (!text) return '--';
+      return moment(text).format('YYYY-MM-DD HH:mm:ss');
+    },
   },
 ]
 
@@ -327,15 +344,17 @@ export default {
       listenerForm: {}, // 监听器详情表单
       listenerFormModelVisible: false, // 监听器 编辑 侧边栏显示状态
       fieldsListOfListener: [],
-      searchForm:{},
+      searchForm:{
+        pageNumber: 0,
+        pageSize: 20
+      },
       listenerFieldForm: {}, // 监听器 注入字段 详情表单
       listenerFieldFormModelVisible: false, // 监听器 注入字段表单弹窗 显示状态
       groovyListDialogVisible: false,
-      groovyList:[
-        {id:"1",name:'groovy脚本1',type:'groovy脚本',createtime:'2021-11-25 00:00:00'},
-        {id:"2",name:'groovy脚本2',type:'groovy脚本',createtime:'2021-11-25 00:00:00'},
-        {id:"3",name:'groovy脚本3',type:'groovy脚本',createtime:'2021-11-25 00:00:00'}
-      ],
+      groovyList: {
+        content: [],
+        totalElements: 0
+      },
       editingListenerIndex: -1, // 监听器所在下标，-1 为新增
       editingListenerFieldIndex: -1, // 字段所在下标，-1 为新增
       listenerTypeObject: listenerType,
@@ -351,7 +370,15 @@ export default {
     }
   },
   methods: {
-    onSubmit() {
+    onSubmit(isFirst) {
+      if (isFirst) {
+        this.searchForm.pageNumber = this.$options.data.call(this).searchForm.pageNumber
+      }
+      this.$api.listDictionaries({ ...this.searchForm, searchType: 'GOORY-TYPE' }).then(resp => {
+        this.groovyList = resp.data
+      }).catch(e => {
+        this.$message.error(e.response.message || '查询失败');
+      }).finally()
       console.log('onSubmit')
     },
     resetListenersList() {
@@ -393,6 +420,8 @@ export default {
     },
     openGroovyForm(){
       this.groovyListDialogVisible = true;
+      this.searchForm = this.$options.data.call(this).searchForm
+      this.onSubmit()
     },
     handleGroovyListSelectionChange(selectedRowKeys, selectedRows){
         this.selects = selectedRows;

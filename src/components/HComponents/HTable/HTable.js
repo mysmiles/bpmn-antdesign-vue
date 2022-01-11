@@ -16,7 +16,7 @@ export default {
   },
   props: Object.assign({}, T.props,{
     pagination: {
-      type: Boolean,
+      type: [Object, Boolean],
       default: false,
     }
   }),

@@ -1,5 +1,7 @@
 const path = require("path");
 const TerserPlugin = require("terser-webpack-plugin");
+// const url = 'http://localhost:9999';
+const url = 'http://192.168.100.143:9999';
 
 const IS_PROD = process.env.NODE_ENV === "production";
 
@@ -8,11 +10,9 @@ function resolve(dir) {
 }
 
 const CDN = {
-  externals: {
-  },
+  externals: {},
   css: [],
-  js: [
-  ]
+  js: []
 };
 
 module.exports = {
@@ -21,12 +21,10 @@ module.exports = {
   devServer: {
     port: 8100,
     proxy: {
-      "^/user/": {
-        target: "http://localhost:3000/user",
+      "/api": {
+        target: url,
         changeOrigin: true, //是否允许跨域
-        pathRewrite: {
-          "^/user": "/"
-        }
+        ws: true
       }
     }
   },

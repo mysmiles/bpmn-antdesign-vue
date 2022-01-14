@@ -282,12 +282,12 @@
           "type": "String"
         },
         {
-          "name": "timeLimit",
+          "name": "limitTime",
           "isAttr": true,
           "type": "String"
         },
         {
-          "name": "warningTimeLimit",
+          "name": "warningLimitTime",
           "isAttr": true,
           "type": "String"
         },
@@ -304,6 +304,11 @@
         },
         {
           "name":"executionListener",
+          "isAbstract": true,
+          "type":"Expression"
+        },
+        {
+          "name":"taskListener",
           "isAbstract": true,
           "type":"Expression"
         },
@@ -364,7 +369,7 @@
       "extends": [ "bpmn:UserTask" ],
       "properties": [
         {
-          "name": "assignee",
+          "name": "assigneeRouterParam",
           "isAttr": true,
           "type": "String"
         },
@@ -424,12 +429,12 @@
           "type": "String"
         },
         {
-          "name": "dealWay",
+          "name": "isCandidate",
           "isAttr": true,
           "type": "String"
         },
         {
-          "name": "isMulti",
+          "name": "isMultiIntance",
           "isAttr": true,
           "type": "String"
         },
@@ -501,12 +506,12 @@
           "type": "String"
         },
         {
-          "name": "timeLimit",
+          "name": "limitTime",
           "isAttr": true,
           "type": "String"
         },
         {
-          "name": "warningTimeLimit",
+          "name": "warningLimitTime",
           "isAttr": true,
           "type": "String"
         }

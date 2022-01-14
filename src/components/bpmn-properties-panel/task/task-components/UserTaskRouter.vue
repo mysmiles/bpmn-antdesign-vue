@@ -16,26 +16,26 @@
           </a-select-option>
         </a-select>
       </a-form-model-item>
-      <a-form-model-item  v-if="userTaskForm.assigneeRouter !== 6" label="参数" ref="assignee" prop="assignee" :rules="{ required: true, message: '请选择参数', trigger: ['blur', 'change'] }" :autoLink="false">
+      <a-form-model-item  v-if="userTaskForm.assigneeRouter !== 6" label="参数" ref="assigneeRouterParam" prop="assigneeRouterParam" :rules="{ required: true, message: '请选择参数', trigger: ['blur', 'change'] }" :autoLink="false">
 
         <div v-if="userTaskForm.assigneeRouter === 1">
-          <transfer-tree :value="userTaskForm.assignee" @change="(val) => {this.userTaskForm.assignee = val; this.updateElementTask('assignee')}" />
+          <transfer-tree :value="userTaskForm.assigneeRouterParam" @change="(val) => {this.userTaskForm.assigneeRouterParam = val; this.updateElementTask('assigneeRouterParam')}" />
         </div>
         <div v-else-if="userTaskForm.assigneeRouter === 2">
-          <roles-select :value="userTaskForm.assignee" @change="(val) => {this.userTaskForm.assignee = val; this.updateElementTask('assignee')}" />
+          <roles-select :value="userTaskForm.assigneeRouterParam" @change="(val) => {this.userTaskForm.assigneeRouterParam = val; this.updateElementTask('assigneeRouterParam')}" />
         </div>
         <div v-else-if="userTaskForm.assigneeRouter === 3">
-          <organization-select :value="userTaskForm.assignee" @change="(val) => {this.userTaskForm.assignee = val; this.updateElementTask('assignee')}" />
+          <organization-select :value="userTaskForm.assigneeRouterParam" @change="(val) => {this.userTaskForm.assigneeRouterParam = val; this.updateElementTask('assigneeRouterParam')}" />
         </div>
         <div v-else-if="userTaskForm.assigneeRouter === 4">
-          <department-select :value="userTaskForm.assignee" @change="(val) => {this.userTaskForm.assignee = val; this.updateElementTask('assignee')}" />
+          <department-select :value="userTaskForm.assigneeRouterParam" @change="(val) => {this.userTaskForm.assigneeRouterParam = val; this.updateElementTask('assigneeRouterParam')}" />
         </div>
         <div v-else-if="userTaskForm.assigneeRouter === 5">
           <!--todo: 这个 procDefId 和 id从哪里来-->
-          <progress-task-key-select :value="userTaskForm.assignee" @change="(val) => {this.userTaskForm.assignee = val; this.updateElementTask('assignee')}" :procDefId="procDefId" :id="id" />
+          <progress-task-key-select :value="userTaskForm.assigneeRouterParam" @change="(val) => {this.userTaskForm.assigneeRouterParam = val; this.updateElementTask('assigneeRouterParam')}" :procDefId="procDefId" :id="id" />
         </div>
         <div v-else>
-          <a-input v-model="userTaskForm.assignee" />
+          <a-input v-model="userTaskForm.assigneeRouterParam" />
         </div>
 
 
@@ -59,38 +59,40 @@
         <h-switch v-model="userTaskForm.taskAutoSubmit" @change="updateElementTask('taskAutoSubmit')" />
        </a-form-model-item>
       <a-form-model-item label="办理人数（最大）" prop="maxAssigneeNum">
-        <a-input style="width:160px" v-model.number="userTaskForm.maxAssigneeNum" allowClear @change="updateBaseInfo('maxAssigneeNum')" >
+        <a-input style="width:160px" v-model.number="userTaskForm.maxAssigneeNum" allowClear @change="updateElementTask('maxAssigneeNum')" >
           <i slot="addonAfter">个</i>
         </a-input>
       </a-form-model-item>
       <a-form-model-item label="办理人数（最少）" prop="minAssigneeNum">
-        <a-input style="width:160px" v-model.number="userTaskForm.minAssigneeNum" allowClear @change="updateBaseInfo('AssigneeNum')" >
+        <a-input style="width:160px" v-model.number="userTaskForm.minAssigneeNum" allowClear @change="updateElementTask('minAssigneeNum')" >
           <i slot="addonAfter">个</i>
         </a-input>
       </a-form-model-item>
       <a-form-model-item label="展现方式">
         <a-radio-group v-model="userTaskForm.assigneeShowType" @change="updateElementTask('assigneeShowType')">
-          <a-radio value="人员">按人员</a-radio>
-          <a-radio value="部门">部门</a-radio>
-          <a-radio value="组织机构">组织机构</a-radio>
-          <a-radio value="角色">角色</a-radio>
+          <a-radio value="1">按人员</a-radio>
+          <a-radio value="2">部门</a-radio>
+          <a-radio value="3">组织机构</a-radio>
+          <a-radio value="4">角色</a-radio>
         </a-radio-group>
       </a-form-model-item>
       <a-form-model-item label="处理方式">
-        <a-radio-group v-model="userTaskForm.dealWay" @change="updateElementTask('dealWay')">
+        <h-switch v-model="userTaskForm.isCandidate" @change="updateElementTask('isCandidate')" />
+        <span>常规</span>
+<!--        <a-radio-group v-model="userTaskForm.isCandidate" @change="updateElementTask('isCandidate')">
           <a-radio value="常规">常规</a-radio>
-          <a-radio v-if="userTaskForm.isMulti === 0" value="接收办理">接收办理</a-radio>
-<!--          <a-radio v-if="userTaskForm.isMulti === 1" value="串行">串行</a-radio>
-          <a-radio v-if="userTaskForm.isMulti === 1" value="并行">并行</a-radio>
-          <a-radio v-if="userTaskForm.isMulti === 1" value="循环">循环</a-radio>-->
-        </a-radio-group>
+          &lt;!&ndash;<a-radio v-if="userTaskForm.isMultiIntance === 0" value="接收办理">接收办理</a-radio>&ndash;&gt;
+&lt;!&ndash;          <a-radio v-if="userTaskForm.isMultiIntance === 1" value="串行">串行</a-radio>
+          <a-radio v-if="userTaskForm.isMultiIntance === 1" value="并行">并行</a-radio>
+          <a-radio v-if="userTaskForm.isMultiIntance === 1" value="循环">循环</a-radio>&ndash;&gt;
+        </a-radio-group>-->
       </a-form-model-item>
       <a-form-model-item label="多实例">
-        <h-switch v-model="userTaskForm.isMulti" @change="updateElementTask('isMulti')" />
+        <h-switch v-model="userTaskForm.isMultiIntance" @change="updateElementTask('isMultiIntance')" />
        </a-form-model-item>
-      <a-form-model-item label="完成条件" v-if="userTaskForm.isMulti === 1">
+<!--      <a-form-model-item label="完成条件" v-if="userTaskForm.isMultiIntance === 1">
         <a-input style="width:120px" v-model="userTaskForm.doneCondition" allowClear @change="updateBaseInfo('doneCondition')" ></a-input>
-       </a-form-model-item>
+       </a-form-model-item>-->
     </a-form-model>
     <a-modal :visible="userFormVisible" title="候选人选择" width="600px" destroy-on-close @cancel="userFormVisible = false">
       <h-table
@@ -155,14 +157,14 @@ export default {
       wrapperCol: { span: 16 },
       userColumns,
       defaultTaskForm: {
-        assignee: "",
+        assigneeRouterParam: "",
         assigneeHistoryFirst:0,
         taskAutoSubmit:0,
         maxAssigneeNum:1,
         minAssigneeNum:0,
-        assigneeShowType:"人员", 
-        dealWay:"常规",
-        isMulti:0,
+        assigneeShowType: '1',
+        isCandidate: '',
+        isMultiIntance:0,
         arriveNotification:0,
         doneCondition:0,
         assigneeRouter:"",
@@ -182,7 +184,7 @@ export default {
       routerTypes:[],
       rules: {
         maxAssigneeNum: [{ validator: isGreater, trigger: ['change', 'blur'] }],
-        minAssigneeNum: [{ validator: isSmaller, trigger: 'change' }],
+        minAssigneeNum: [{ validator: isSmaller, trigger: ['change', 'blur'] }],
       }
     };
   },
@@ -208,9 +210,6 @@ export default {
         this.routerTypes = res.data[0].items;
       });
     },
-    updateBaseInfo(key) {
-      console.log(key)
-    },
     resetTaskForm() {
       for (let key in this.defaultTaskForm) {
         let value;
@@ -227,11 +226,11 @@ export default {
         this.userFormVisible = true;
     },
     saveUser(){
-     this.userTaskForm.assignee = this.selectUsers.map(v=>v.name).join(",");
+     this.userTaskForm.assigneeRouterParam = this.selectUsers.map(v=>v.name).join(",");
      this.userTaskForm.candidateUsers = this.selectUsers.map(v=>v.name).join(",");
      this.userFormVisible = false;
-     this.$refs.assignee.onFieldChange()
-     this.updateElementTask("assignee");
+     this.$refs.assigneeRouterParam.onFieldChange()
+     this.updateElementTask("assigneeRouterParam");
      this.updateElementTask("candidateUsers");
     },
     handleSelectionChange(selectedRowKeys, selectedRows) {
@@ -253,6 +252,12 @@ export default {
   },
   mounted() {
     this.loadDict()
+    this.$nextTick(() => {
+      let operateArr = ['maxAssigneeNum', 'minAssigneeNum'];
+      operateArr.forEach(item => {
+        this.updateElementTask(item)
+      })
+    })
   }
 };
 </script>

@@ -13,7 +13,7 @@
       </a-form-model-item>
       <template v-if="loopCharacteristics === 'ParallelMultiInstance' || loopCharacteristics === 'SequentialMultiInstance'">
         <a-form-model-item label="循环基数" key="loopCardinality">
-          <a-input v-model="loopInstanceForm.loopCardinality" allow-clear @change="updateLoopCardinality" />
+          <a-input v-model="loopInstanceForm.loopCardinality" allow-clear @change="updateLoopCardinality(loopInstanceForm.loopCardinality)" />
         </a-form-model-item>
         <a-form-model-item label="集合" key="collection">
           <a-input v-model="loopInstanceForm.collection" allow-clear @change="updateLoopBase" />
@@ -22,7 +22,7 @@
           <a-input v-model="loopInstanceForm.elementVariable" allow-clear @change="updateLoopBase" />
         </a-form-model-item>
         <a-form-model-item label="完成条件" key="completionCondition">
-          <a-input v-model="loopInstanceForm.completionCondition" allow-clear @change="updateLoopCondition" />
+          <a-input v-model="loopInstanceForm.completionCondition" allow-clear @change="updateLoopCondition(loopInstanceForm.completionCondition)" />
         </a-form-model-item>
 <!--        <a-form-model-item label="异步状态" key="async">
           <a-checkbox v-model="loopInstanceForm.asyncBefore" @change="updateLoopAsync('asyncBefore')">异步前</a-checkbox>
@@ -58,12 +58,14 @@ export default {
       loopCharacteristics: "",
       //默认配置，用来覆盖原始不存在的选项，避免报错
       defaultLoopInstanceForm: {
-        completionCondition: "",
+        completionCondition: '${nrOfCompletedInstances/nrOfInstances>=1}',
         loopCardinality: "",
         extensionElements: [],
         asyncAfter: false,
         asyncBefore: false,
-        exclusive: false
+        exclusive: false,
+        collection: '${assigneeList}',
+        elementVariable: 'assignee'
       },
       loopInstanceForm: {}
     };
@@ -81,12 +83,12 @@ export default {
     getElementLoop(businessObject) {
       if (!businessObject.loopCharacteristics) {
         this.loopCharacteristics = "Null";
-        this.loopInstanceForm = {};
+        this.loopInstanceForm = { ...this.defaultLoopInstanceForm };
         return;
       }
       if (businessObject.loopCharacteristics.$type === "bpmn:StandardLoopCharacteristics") {
         this.loopCharacteristics = "StandardLoop";
-        this.loopInstanceForm = {};
+        this.loopInstanceForm = {...this.defaultLoopInstanceForm};
         return;
       }
       if (businessObject.loopCharacteristics.isSequential) {
@@ -98,7 +100,7 @@ export default {
       this.loopInstanceForm = {
         ...this.defaultLoopInstanceForm,
         ...businessObject.loopCharacteristics,
-        completionCondition: businessObject.loopCharacteristics?.completionCondition?.body ?? "",
+        completionCondition: businessObject.loopCharacteristics?.completionCondition?.body ?? this.defaultLoopInstanceForm.completionCondition,
         loopCardinality: businessObject.loopCharacteristics?.loopCardinality?.body ?? ""
       };
       // 保留当前元素 businessObject 上的 loopCharacteristics 实例

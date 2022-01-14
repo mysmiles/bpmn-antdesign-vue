@@ -40,7 +40,7 @@
         size="small"
         ref="formListTable"
         bordered
-        rowKey="filed"
+        rowKey="id"
         :columns="formColumns"
         :scroll="{ y: 240 }"
         :rowSelection="{ selectedRowKeys: selectFormIds, selectedRows: selectForms, onChange: handleSelectionChange }"
@@ -258,7 +258,7 @@ export default {
       this.bpmnElementFormList = this.bpmnElementForms.reduce((pre, current) => pre.concat(current.values), []); 
       // 复制 显示
      // this.elementPropertyList = JSON.parse(JSON.stringify(this.bpmnElementPropertyList ?? []));
-      this.taskFormList = this.bpmnElementFormList.map(current => Object.assign({"isDefault":current.$attrs.isDefault},current)); 
+      this.taskFormList = this.bpmnElementFormList;
     },
     // resetFormList() {
     //   this.bpmnELement = window.bpmnInstances.bpmnElement;
@@ -285,6 +285,7 @@ export default {
     // },
     openFormDialog(){
         this.formListDialogVisible = true;
+        this.selectFormIds = this.taskFormList.map(item => item.id)
         this.searchForm = this.$options.data.call(this).searchForm
         this.onSubmit()
     },
@@ -309,7 +310,7 @@ export default {
       this.taskFormList = this.taskFormList.concat(newSelect);
       let newFormsObjects = [];
       newSelect.forEach(f => {
-      newFormsObjects.push(window.bpmnInstances.moddle.create(`${this.prefix}:Form`, f));
+        newFormsObjects.push(window.bpmnInstances.moddle.create(`${this.prefix}:Form`, { id: f.id, name: f.name }));
       });
       // 新建一个属性字段的保存列表
       const formsObject = window.bpmnInstances.moddle.create(`${this.prefix}:Forms`, {
@@ -317,8 +318,8 @@ export default {
       });
       console.log("formsObject", formsObject);
       this.updateElementExtensions(formsObject);
-        this.formListDialogVisible = false;
-        this.resetFormList();
+      this.formListDialogVisible = false;
+      this.resetFormList();
     },
     removeForm(attr, index) {
       this.$confirm({
@@ -354,7 +355,7 @@ export default {
             return;
           }
           Object.keys(obj).forEach(key => {
-            if (key === 'model') {
+            if (key === 'dataId') {
               newArray.push({
                 filed: `${obj[key]}`,
                 isDisabled: 0,

@@ -20,7 +20,7 @@
     <!-- 监听器 编辑/创建 部分 -->
     <a-drawer :visible="listenerFormModelVisible" title="执行监听器" :width="`${width}px`" destroy-on-close closable @close="listenerFormModelVisible = false">
       <a-form-model size="small" :model="listenerForm" :label-col="labelCol" :wrapper-col="wrapperCol" ref="listenerFormRef" @submit.native.prevent>
-        <a-form-model-item label="事件类型" prop="event" :rules="{ required: true, message: '请选择事件类型', trigger: ['blur', 'change'] }">
+        <a-form-model-item label="事件类型" prop="event" :rules="[{ validator: checkEventType, trigger: ['blur', 'change'] }, { required: true, message: '请选择事件类型', trigger: ['blur', 'change'] }]">
           <a-select v-if="type === 'SequenceFlow'" v-model="listenerForm.event">
             <a-select-option value="take">take</a-select-option>
           </a-select>
@@ -173,14 +173,13 @@
     <a-modal :visible="groovyListDialogVisible" title="脚本库" width="600px" destroy-on-close @cancel="groovyListDialogVisible = false">
       <a-form layout="inline" :model="searchForm" class="demo-form-inline" style="margin-bottom: 15px">
         <a-form-model-item>
-          <a-input v-model="searchForm.name" placeholder="脚本名称"></a-input>
+          <a-input v-model="searchForm.searchBeanName" placeholder="脚本名称"></a-input>
         </a-form-model-item>
-<!--        <a-form-model-item>
-          <a-select style="width: 180px" v-model="searchForm.type" placeholder="脚本类别">
-            <a-select-option value="默认类别">默认类别</a-select-option>
-            <a-select-option value="新增类别">新增类别</a-select-option>
+        <a-form-model-item>
+          <a-select style="width: 180px" v-model="searchForm.searchCalculateType" placeholder="脚本类别">
+            <a-select-option v-for="item in groovyType" :key="item.code" :value="item.code">{{ item.name }}</a-select-option>
           </a-select>
-        </a-form-model-item>-->
+        </a-form-model-item>
         <a-form-model-item>
           <a-button type="primary" @click="onSubmit(true)">查询</a-button>
         </a-form-model-item>
@@ -222,19 +221,19 @@ import moment from 'moment';
 const groovyColumns = [
   {
     title: '名称',
-    dataIndex: 'name',
-    key: 'name',
+    dataIndex: 'beanName',
+    key: 'beanName',
     ellipsis: true,
     showOverflowTooltip: true,
-    scopedSlots: { customRender: 'true' },
+    scopedSlots: { customRender: 'beanName' },
   },
   {
-    title: 'code',
-    dataIndex: 'code',
-    key: 'code',
+    title: '类别',
+    dataIndex: 'calculateType',
+    key: 'calculateType',
     ellipsis: true,
     showOverflowTooltip: true,
-    scopedSlots: { customRender: 'code' },
+    scopedSlots: { customRender: 'calculateType' },
   },
   {
     title: '创建时间',
@@ -261,7 +260,15 @@ export default {
     width: "width"
   },
   data() {
+    let checkEventType = (rule, value, callback) => {
+      if (this.elementListenersList.map(item => item.event).includes(value)) {
+        callback(new Error('已经存在该事件类型'));
+      } else {
+        callback();
+      }
+    };
     return {
+      checkEventType,
       labelCol: { span: 8 },
       wrapperCol: { span: 16 },
       elementListenersColumns: [
@@ -346,7 +353,9 @@ export default {
       fieldsListOfListener: [],
       searchForm:{
         pageNumber: 0,
-        pageSize: 20
+        pageSize: 20,
+        searchBeanName: '',
+        searchCalculateType: ''
       },
       listenerFieldForm: {}, // 监听器 注入字段 详情表单
       listenerFieldFormModelVisible: false, // 监听器 注入字段表单弹窗 显示状态
@@ -358,7 +367,9 @@ export default {
       editingListenerIndex: -1, // 监听器所在下标，-1 为新增
       editingListenerFieldIndex: -1, // 字段所在下标，-1 为新增
       listenerTypeObject: listenerType,
-      fieldTypeObject: fieldType
+      fieldTypeObject: fieldType,
+      groovyType: [],
+      bpmnElement: []
     };
   },
   watch: {
@@ -370,11 +381,16 @@ export default {
     }
   },
   methods: {
+    loadGroovyType() {
+      this.$api.listDictionaries({ searchType: 'GOORY-TYPE' }).then(resp => {
+        this.groovyType = resp.data.content
+      })
+    },
     onSubmit(isFirst) {
       if (isFirst) {
         this.searchForm.pageNumber = this.$options.data.call(this).searchForm.pageNumber
       }
-      this.$api.listDictionaries({ ...this.searchForm, searchType: 'GOORY-TYPE' }).then(resp => {
+      this.$api.listGroovyRules({ ...this.searchForm }).then(resp => {
         this.groovyList = resp.data
       }).catch(e => {
         this.$message.error(e.response.message || '查询失败');
@@ -420,7 +436,8 @@ export default {
     },
     openGroovyForm(){
       this.groovyListDialogVisible = true;
-      this.searchForm = this.$options.data.call(this).searchForm
+      this.searchForm = this.$options.data.call(this).searchForm;
+      this.loadGroovyType();
       this.onSubmit()
     },
     handleGroovyListSelectionChange(selectedRowKeys, selectedRows){
@@ -432,7 +449,7 @@ export default {
           return;
        }
       this.$set(this.listenerForm, 'groovyKeyId', this.selects[0].id)
-      this.$set(this.listenerForm, 'groovyName', this.selects[0].name)
+      this.$set(this.listenerForm, 'groovyName', this.selects[0].beanName)
       this.groovyListDialogVisible = false;
     },
     // 保存监听器注入字段

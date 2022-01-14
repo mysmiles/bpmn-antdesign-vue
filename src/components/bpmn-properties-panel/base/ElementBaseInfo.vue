@@ -23,12 +23,12 @@
       <!--流程的基础属性-->
       <template  v-if="elementBaseInfo.$type === 'bpmn:Process' || elementBaseInfo.$type === 'bpmn:UserTask'">
         <a-form-model-item label="办理时限">
-          <a-input v-model="elementBaseInfo.timeLimit" allowClear @change="updateBaseInfo('timeLimit')" >
+          <a-input v-model="elementBaseInfo.limitTime" allowClear @change="updateBaseInfo('limitTime')" >
             <i slot="addonAfter" style="margin-right: 10px;">天</i>
           </a-input>
         </a-form-model-item>
         <a-form-model-item label="警告时限">
-          <a-input v-model="elementBaseInfo.warningTimeLimit" allowClear @change="updateBaseInfo('warningTimeLimit')" >
+          <a-input v-model="elementBaseInfo.warningLimitTime" allowClear @change="updateBaseInfo('warningLimitTime')" >
             <i slot="addonAfter" style="margin-right: 10px;">天</i>
           </a-input>
         </a-form-model-item>
@@ -82,11 +82,14 @@
           <a-switch v-model="elementBaseInfo.isExecutable" checked-children="是" un-checked-children="否" @change="updateBaseInfo('isExecutable')" />
         </a-form-model-item>
       </template>-->
+<!--      <PhoneNumberInput v-model="value" />
+      {{ value }}-->
     </a-form-model>
   </div>
 </template>
 <script>
 import { uuid } from 'vue-uuid';
+// import PhoneNumberInput from '@/components/HComponents/PhoneNumberInput';
 
 export default {
   name: "ElementBaseInfo",
@@ -98,8 +101,12 @@ export default {
       default: true
     }
   },
+  components: {
+    // PhoneNumberInput
+  },
   data() {
     return {
+      value: '',
       elementBaseInfo: {},
       labelCol: { span: 8 },
       wrapperCol: { span: 16 }
@@ -122,19 +129,25 @@ export default {
     resetBaseInfo() {
       this.bpmnElement = window?.bpmnInstances?.bpmnElement;
       this.elementBaseInfo = Object.assign({
-        timeLimit:this.bpmnElement.businessObject.$attrs.timeLimit,
-        warningTimeLimit:this.bpmnElement.businessObject.$attrs.warningTimeLimit,
-        enableEntrusted:this.bpmnElement.businessObject.$attrs.enableEntrusted,
-        enablePrint:this.bpmnElement.businessObject.$attrs.enablePrint,
-        arriveNotification:this.bpmnElement.businessObject.$attrs.arriveNotification,
-        enableTrack:this.bpmnElement.businessObject.$attrs.enableTrack,
-        requireComment:this.bpmnElement.businessObject.$attrs.requireComment,
-        callActivitiType:this.bpmnElement.businessObject.$attrs.callActivitiType,
-        callActivitiKey:this.bpmnElement.businessObject.$attrs.callActivitiKey,
+        limitTime: this.bpmnElement.businessObject.$attrs.limitTime,
+        warningLimitTime: this.bpmnElement.businessObject.$attrs.warningLimitTime,
+        enableEntrusted: this.bpmnElement.businessObject.$attrs.enableEntrusted ?? 0,
+        enablePrint: this.bpmnElement.businessObject.$attrs.enablePrint ?? 0,
+        arriveNotification: this.bpmnElement.businessObject.$attrs.arriveNotification ?? 0,
+        enableTrack: this.bpmnElement.businessObject.$attrs.enableTrack ?? 0,
+        requireComment: this.bpmnElement.businessObject.$attrs.requireComment ?? 0,
+        callActivitiType: this.bpmnElement.businessObject.$attrs.callActivitiType,
+        callActivitiKey: this.bpmnElement.businessObject.$attrs.callActivitiKey,
         binding:this.bpmnElement.businessObject.$attrs.binding,
         tenantId:this.bpmnElement.businessObject.$attrs.tenantId,
         variable:this.bpmnElement.businessObject.$attrs.variable
         },this.bpmnElement.businessObject);
+      if (this.elementBaseInfo.$type === 'bpmn:UserTask') {
+        let operArr = ['enableEntrusted', 'enablePrint', 'arriveNotification', 'enableTrack', 'requireComment'];
+        operArr.forEach(item => {
+          this.updateBaseInfo(item)
+        })
+      }
     },
     changeId() {
       if (this.type === 'Process') {

@@ -27,11 +27,7 @@
           <a-input v-model="propertyForm.value" allowClear />
         </a-form-model-item> 
         <a-form-model-item label="默认" prop="isDefault">
-            <h-switch
-              v-model="propertyForm.isDefault"
-              active-value="是"
-              inactive-value="否"
-            ></h-switch>
+          <h-switch v-model="propertyForm.isDefault" />
         </a-form-model-item>
       </a-form-model>
       <template slot="footer">
@@ -76,6 +72,9 @@ const elementPropertyColumns = [
     key: 'isDefault',
     minWidth: '100px',
     scopedSlots: { customRender: 'isDefault' },
+    customRender: (item) => {
+      return item ? '是' : '否'
+    }
   },
   {
     title: '操作',
@@ -100,7 +99,11 @@ export default {
       labelCol: { span: 6 },
       wrapperCol: { span: 18 },
       elementPropertyList: [],
-      propertyForm: {},
+      propertyForm: {
+        name: '',
+        value: '',
+        isDefault: 0
+      },
       editingPropertyIndex: -1,
       propertyFormModelVisible: false,
       elementPropertyColumns
@@ -132,7 +135,7 @@ export default {
       // 复制 显示
      // this.elementPropertyList = JSON.parse(JSON.stringify(this.bpmnElementPropertyList ?? []));
       this.elementPropertyList = this.bpmnElementPropertyList.map(current => Object.assign({"isDefault":current.$attrs.isDefault},current));
-      console.log("elementPropertyList", this.elementPropertyList);
+      console.log("elementPropertyList++++++++", this.elementPropertyList);
     },
     openAttributesForm(attr, index) {
       this.editingPropertyIndex = index;

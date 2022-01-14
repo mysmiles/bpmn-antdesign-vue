@@ -501,3 +501,49 @@ export const listTaskDefExtendById = function(parameters = {}) {
   }
   return request('get', domain + path, body, queryParameters, form, config)
 }
+/**
+ * 排序属性：
+ 成功：code=200，data对象为包含分页信息的列表，失败：code!=200
+ * request: listGroovyRules
+ * url: listGroovyRulesURL
+ * method: listGroovyRules_TYPE
+ * raw_url: listGroovyRules_RAW_URL
+ * @param pageNumber - 分页号码,从0开始
+ * @param pageSize - 分页大小
+ * @param searchBeanName - 查询条件:实例名称，模糊查询
+ * @param searchCalculateType - 查询条件:类别，等于
+ * @param searchIsEnable - 查询条件:是否启用，等于
+ * @param sort - 排序规则，格式: 字段名[,asc|desc]，默认升序，支持多字段排序
+ */
+export const listGroovyRules = function(parameters = {}) {
+  const domain = parameters.$domain ? parameters.$domain : getDomain()
+  const config = parameters.$config
+  let path = '/api/groovyRules'
+  let body
+  let queryParameters = {}
+  let form = {}
+  if (parameters['pageNumber'] !== undefined) {
+    queryParameters['pageNumber'] = parameters['pageNumber']
+  }
+  if (parameters['pageSize'] !== undefined) {
+    queryParameters['pageSize'] = parameters['pageSize']
+  }
+  if (parameters['searchBeanName'] !== undefined) {
+    queryParameters['search_beanName'] = parameters['searchBeanName']
+  }
+  if (parameters['searchCalculateType'] !== undefined) {
+    queryParameters['search_calculateType'] = parameters['searchCalculateType']
+  }
+  if (parameters['searchIsEnable'] !== undefined) {
+    queryParameters['search_isEnable'] = parameters['searchIsEnable']
+  }
+  if (parameters['sort'] !== undefined) {
+    queryParameters['sort'] = parameters['sort']
+  }
+  if (parameters.$queryParameters) {
+    Object.keys(parameters.$queryParameters).forEach(function(parameterName) {
+      queryParameters[parameterName] = parameters.$queryParameters[parameterName]
+    });
+  }
+  return request('get', domain + path, body, queryParameters, form, config)
+}

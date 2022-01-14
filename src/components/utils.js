@@ -13,7 +13,8 @@ export function createListenerObject(options, isTask, prefix) {
   isTask && (listenerObj.id = options.id); // 任务监听器特有的 id 字段
   switch (options.listenerType) {
     case "scriptListener":
-      listenerObj.script = createScriptObject(options, prefix);
+      // listenerObj.script = createScriptObject(element, options, prefix);
+      listenerObj.expression = '${groovyHandler.groovyHandler(task, "' + options.groovyKeyId + '")}';
       break;
     case "expressionListener":
       listenerObj.expression = options.expression;
@@ -49,13 +50,17 @@ export function createFieldObject(option, prefix) {
   return window.bpmnInstances.moddle.create(`${prefix}:Field`, fieldConfig);
 }
 
-// 创建脚本实例
-export function createScriptObject(options, prefix) {
-  const { scriptType, scriptFormat, value, resource, groovyName, groovyKeyId} = options;
+/*// 创建脚本实例
+export function createScriptObject(element, options) {
+  const { groovyKeyId} = options;
+  console.log("element", element)
   console.log("options", options)
-  const scriptConfig = scriptType === "inlineScript" ? { scriptFormat, value } : { scriptFormat, resource,  groovyName, groovyKeyId};
-  return window.bpmnInstances.moddle.create(`${prefix}:Script`, scriptConfig);
-}
+  // const scriptConfig = { groovyKeyId};
+  // return window.bpmnInstances.moddle.create(`${prefix}:Script`, scriptConfig);
+  return window.bpmnInstances.modeling.updateProperties(element, {
+    expression: '${groovyHandler.groovyHandler(task, "' + groovyKeyId + '")}'
+  });
+}*/
 
 // 更新元素扩展属性
 export function updateElementExtensions(element, extensionList) {

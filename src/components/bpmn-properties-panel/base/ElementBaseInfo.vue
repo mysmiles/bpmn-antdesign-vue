@@ -21,7 +21,7 @@
         <a-input v-model="elementBaseInfo.name" allowClear @change="updateBaseInfo('name')" />
       </a-form-model-item>
       <!--流程的基础属性-->
-      <template  v-if="elementBaseInfo.$type === 'bpmn:Process' || elementBaseInfo.$type === 'bpmn:UserTask'">
+      <template  v-if="elementBaseInfo.$type === 'bpmn:Process'">
         <a-form-model-item label="办理时限">
           <a-input v-model="elementBaseInfo.limitTime" allowClear @change="updateBaseInfo('limitTime')" >
             <i slot="addonAfter" style="margin-right: 10px;">天</i>
@@ -29,6 +29,18 @@
         </a-form-model-item>
         <a-form-model-item label="警告时限">
           <a-input v-model="elementBaseInfo.warningLimitTime" allowClear @change="updateBaseInfo('warningLimitTime')" >
+            <i slot="addonAfter" style="margin-right: 10px;">天</i>
+          </a-input>
+        </a-form-model-item>
+      </template>
+      <template  v-if="elementBaseInfo.$type === 'bpmn:UserTask'">
+        <a-form-model-item label="办理时限">
+          <a-input v-model="elementBaseInfo.timeLimit" allowClear @change="updateBaseInfo('timeLimit')" >
+            <i slot="addonAfter" style="margin-right: 10px;">天</i>
+          </a-input>
+        </a-form-model-item>
+        <a-form-model-item label="警告时限">
+          <a-input v-model="elementBaseInfo.warningTimeLimit" allowClear @change="updateBaseInfo('warningTimeLimit')" >
             <i slot="addonAfter" style="margin-right: 10px;">天</i>
           </a-input>
         </a-form-model-item>
@@ -130,7 +142,9 @@ export default {
       this.bpmnElement = window?.bpmnInstances?.bpmnElement;
       this.elementBaseInfo = Object.assign({
         limitTime: this.bpmnElement.businessObject.$attrs.limitTime,
+        timeLimit: this.bpmnElement.businessObject.$attrs.timeLimit,
         warningLimitTime: this.bpmnElement.businessObject.$attrs.warningLimitTime,
+        warningTimeLimit: this.bpmnElement.businessObject.$attrs.warningTimeLimit,
         enableEntrusted: this.bpmnElement.businessObject.$attrs.enableEntrusted ?? 0,
         enablePrint: this.bpmnElement.businessObject.$attrs.enablePrint ?? 0,
         arriveNotification: this.bpmnElement.businessObject.$attrs.arriveNotification ?? 0,

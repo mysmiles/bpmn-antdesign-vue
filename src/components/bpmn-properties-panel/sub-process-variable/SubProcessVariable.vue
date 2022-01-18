@@ -66,8 +66,6 @@
 </template>
 
 <script>
-import { initListenerType } from '@/components/bpmn-properties-panel/listeners/utilSelf';
-
 const variableFormColumns = [
   {
     title: '序号',
@@ -148,12 +146,22 @@ export default {
   mounted() {
   },
   methods: {
+    initVariable(element) {
+      return {
+        type: 'Source',
+        ...element
+      }
+    },
     resetList() {
       this.bpmnElement = window.bpmnInstances.bpmnElement;
       this.otherExtensionList = [];
-      this.bpmnElementListeners =
-          this.bpmnElement.businessObject?.extensionElements?.values?.filter(ex => ex.$type === `${this.prefix}:in`) ?? [];
-      this.variableInFormList = this.bpmnElementListeners.map(listener => initListenerType(listener));
+      this.bpmnElementVaribleIn =
+          this.bpmnElement.businessObject?.extensionElements?.values?.filter(ex => (ex.$type === `${this.prefix}:In`)) ?? [];
+      this.variableInFormList = this.bpmnElementVaribleIn.map(listener => this.initVariable(listener));
+      this.bpmnElementVaribleOut =
+          this.bpmnElement.businessObject?.extensionElements?.values?.filter(ex => (ex.$type === `${this.prefix}:Out`)) ?? [];
+      this.variableOutFormList = this.bpmnElementVaribleOut.map(listener => this.initVariable(listener));
+      this.otherExtensionList = [ ...this.bpmnElementVaribleIn, ...this.bpmnElementVaribleOut ]
     },
     openVariableFormModal(type, row, index) {
       this.variableForm = this.$options.data.call(this).variableForm;
@@ -172,9 +180,26 @@ export default {
         onOk: () => {
           if (type === 'in') {
             this.variableInFormList.splice(index, 1);
+            this.bpmnElementVaribleIn.splice(index, 1);
+            this.otherExtensionList = [ ...this.bpmnElementVaribleIn, ...this.bpmnElementVaribleOut ];
+            const extensions = window.bpmnInstances.moddle.create("bpmn:ExtensionElements", {
+              values: this.otherExtensionList
+            });
+            window.bpmnInstances.modeling.updateProperties(this.bpmnElement, {
+              extensionElements: extensions
+            });
           } else {
             this.variableOutFormList.splice(index, 1);
+            this.bpmnElementVaribleOut.splice(index, 1);
+            this.otherExtensionList = [ ...this.bpmnElementVaribleIn, ...this.bpmnElementVaribleOut ];
+            const extensions = window.bpmnInstances.moddle.create("bpmn:ExtensionElements", {
+              values: this.otherExtensionList
+            });
+            window.bpmnInstances.modeling.updateProperties(this.bpmnElement, {
+              extensionElements: extensions
+            });
           }
+          this.resetList()
           // this.createFieldObject()
           // updateElementExtensions(this.bpmnElement, this.otherExtensionList.concat(this.bpmnElementListeners));
         },
@@ -197,13 +222,16 @@ export default {
         source: this.variableForm.source,
         target: this.variableForm.target
       }
+      this.resetList()
       if (this.variableForm.$index > -1) {
         this.variableInFormList.splice(this.variableForm.$index, 1, changeItem);
-        window.bpmnInstances.modeling.updateProperties(this.bpmnElement, changeItem);
+        this.bpmnElementVaribleIn.splice(this.variableForm.$index, 1)
+        const concatList = [ ...this.bpmnElementVaribleIn, ...this.bpmnElementVaribleOut ]
+        this.updateFieldItemObject(changeItem, 'In', concatList)
         return;
       }
       this.variableInFormList.push(changeItem)
-      window.bpmnInstances.modeling.updateProperties(this.bpmnElement, changeItem);
+      this.updateFieldItemObject(changeItem, 'In', this.otherExtensionList)
     },
     dealOutVariable() {
       let changeItem = {
@@ -211,18 +239,30 @@ export default {
         source: this.variableForm.source,
         target: this.variableForm.target
       }
+      this.resetList()
       if (this.variableForm.$index > -1) {
         this.variableOutFormList.splice(this.variableForm.$index, 1, changeItem);
-        window.bpmnInstances.modeling.updateProperties(this.bpmnElement, changeItem);
+        this.bpmnElementVaribleOut.splice(this.variableForm.$index, 1)
+        const concatList = [ ...this.bpmnElementVaribleIn, ...this.bpmnElementVaribleOut ]
+        this.updateFieldItemObject(changeItem, 'Out', concatList)
         return;
       }
       this.variableOutFormList.push(changeItem)
-      // window.bpmnInstances.modeling.updateProperties(this.bpmnElement, changeItem);
-      this.createFieldObject(changeItem, 'Out')
+      this.updateFieldItemObject(changeItem, 'Out', this.otherExtensionList)
     },
-    createFieldObject(option, type) {
+    updateFieldItemObject(option, type, concatList) {
       const { source, target } = option;
-      return window.bpmnInstances.moddle.create(`${this.prefix}:${type}`, { source, target });
+      const newAdd = window.bpmnInstances.moddle.create(`${this.prefix}:${type}`, { source, target });
+      this.updateFiledObject(newAdd, concatList)
+    },
+    updateFiledObject(object, concatList) {
+      const extensions = window.bpmnInstances.moddle.create("bpmn:ExtensionElements", {
+        values: concatList.concat([object])
+      });
+      window.bpmnInstances.modeling.updateProperties(this.bpmnElement, {
+        extensionElements: extensions
+      });
+      this.resetList()
     }
   }
 }

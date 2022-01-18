@@ -506,12 +506,12 @@
           "type": "String"
         },
         {
-          "name": "limitTime",
+          "name": "timeLimit",
           "isAttr": true,
           "type": "String"
         },
         {
-          "name": "warningLimitTime",
+          "name": "warningTimeLimit",
           "isAttr": true,
           "type": "String"
         }

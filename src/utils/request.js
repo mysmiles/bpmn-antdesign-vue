@@ -41,6 +41,7 @@ const errorHandler = error => {
       login()
         .then(result => {
           storage.set(ACCESS_TOKEN, result.access_token, 7 * 24 * 60 * 60 * 1000);
+          sessionStorage
           this.$store.commit('SET_TOKEN', result.access_token);
         })
     }

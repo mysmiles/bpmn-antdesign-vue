@@ -73,22 +73,33 @@ export default {
   watch: {
     businessObject: {
       immediate: true,
+      deep: true,
       handler(val) {
         this.bpmnElement = window.bpmnInstances.bpmnElement;
         this.getElementLoop(val);
       }
+    },
+    loopCharacteristics: {
+      handler(val) {
+        if (['ParallelMultiInstance', 'SequentialMultiInstance'].includes(val)) {
+          this.loopInstanceForm = { ...this.defaultLoopInstanceForm };
+          this.setDefaultValue()
+        }
+      }
     }
   },
   methods: {
+    setDefaultValue() {
+      this.updateLoopBase();
+      this.updateLoopCondition(this.loopInstanceForm.completionCondition)
+    },
     getElementLoop(businessObject) {
       if (!businessObject.loopCharacteristics) {
         this.loopCharacteristics = "Null";
-        this.loopInstanceForm = { ...this.defaultLoopInstanceForm };
         return;
       }
       if (businessObject.loopCharacteristics.$type === "bpmn:StandardLoopCharacteristics") {
         this.loopCharacteristics = "StandardLoop";
-        this.loopInstanceForm = {...this.defaultLoopInstanceForm};
         return;
       }
       if (businessObject.loopCharacteristics.isSequential) {

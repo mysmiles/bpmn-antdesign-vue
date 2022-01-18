@@ -39,6 +39,7 @@
                 模拟
               </a-button>
             </a-dropdown>
+            <a-button :size="headerButtonSize" :type="headerButtonType" icon="save" @click="saveXML">保存</a-button>
           </a-button-group>
           <a-button-group key="align-control">
             <a-tooltip title="向左对齐">
@@ -91,7 +92,7 @@
     <div class="my-process-designer__container">
       <div class="my-process-designer__canvas" ref="bpmn-canvas"></div>
     </div>
-    <a-modal title="预览" width="60%" :visible="previewModelVisible" @cancel="previewModelVisible=false">
+    <a-modal title="预览" width="60%"  :visible="previewModelVisible" @cancel="previewModelVisible=false">
       <highlightjs :language="previewType" :code="previewResult" />
     </a-modal>
   </div>
@@ -464,6 +465,11 @@ export default {
         this.previewResult = convert.xml2json(xml, { spaces: 2 });
         this.previewType = "json";
         this.previewModelVisible = true;
+      });
+    },
+    saveXML() {
+      this.bpmnModeler.saveXML({ format: true }).then(({ xml }) => {
+        console.log(xml);
       });
     }
   }

@@ -130,8 +130,8 @@
       </h-table>
 
       <div class="element-drawer__button element-drawer__two-btn">
-        <a-button size="small" @click="listenerFormModelVisible = false">取 消</a-button>
-        <a-button size="small" type="primary" @click="saveListenerConfig">保 存</a-button>
+        <a-button @click="listenerFormModelVisible = false">取 消</a-button>
+        <a-button type="primary" @click="saveListenerConfig">保 存</a-button>
       </div>
     </a-drawer>
 
@@ -176,7 +176,7 @@
           <a-input v-model="searchForm.searchBeanName" placeholder="脚本名称"></a-input>
         </a-form-model-item>
         <a-form-model-item>
-          <a-select style="width: 180px" v-model="searchForm.searchCalculateType" placeholder="脚本类别">
+          <a-select style="width: 180px" v-model="searchForm.searchCalculateType" placeholder="脚本类别" allow-clear>
             <a-select-option v-for="item in groovyType" :key="item.code" :value="item.code">{{ item.name }}</a-select-option>
           </a-select>
         </a-form-model-item>
@@ -261,7 +261,9 @@ export default {
   },
   data() {
     let checkEventType = (rule, value, callback) => {
-      if (this.elementListenersList.map(item => item.event).includes(value)) {
+      let isCheck = false;
+      isCheck = !(this.editingListenerIndex > -1 && this.elementListenersList[this.editingListenerIndex].event === value);
+      if (this.elementListenersList.map(item => item.event).includes(value) && isCheck) {
         callback(new Error('已经存在该事件类型'));
       } else {
         callback();
@@ -494,6 +496,7 @@ export default {
         onOk: () => {
           this.bpmnElementListeners.splice(index, 1);
           this.elementListenersList.splice(index, 1);
+          this.otherExtensionList = this.bpmnElement.businessObject?.extensionElements?.values?.filter(ex => ex.$type !== `${this.prefix}:ExecutionListener`) ?? [];
           updateElementExtensions(this.bpmnElement, this.otherExtensionList.concat(this.bpmnElementListeners));
         },
         onCancel: () => {

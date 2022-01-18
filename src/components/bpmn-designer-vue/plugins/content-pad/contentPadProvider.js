@@ -1,3 +1,4 @@
+/*eslint-disable*/
 import { assign, forEach, isArray } from "min-dash";
 
 import { is } from "bpmn-js/lib/util/ModelUtil";

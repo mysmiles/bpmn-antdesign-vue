@@ -48,7 +48,7 @@ F.prototype.getPaletteEntries = function() {
 
   function createSubprocess(event) {
     var subProcess = elementFactory.createShape({
-      type: "bpmn:SubProcess",
+      type: "bpmn:CallActivity",
       x: 0,
       y: 0,
       isExpanded: false

@@ -76,9 +76,8 @@
           <a-radio value="4">角色</a-radio>
         </a-radio-group>
       </a-form-model-item>
-      <a-form-model-item label="处理方式">
+      <a-form-model-item label="是否候选人">
         <h-switch v-model="userTaskForm.isCandidate" @change="updateElementTask('isCandidate')" />
-        <span>常规</span>
 <!--        <a-radio-group v-model="userTaskForm.isCandidate" @change="updateElementTask('isCandidate')">
           <a-radio value="常规">常规</a-radio>
           &lt;!&ndash;<a-radio v-if="userTaskForm.isMultiIntance === 0" value="接收办理">接收办理</a-radio>&ndash;&gt;
@@ -163,7 +162,7 @@ export default {
         maxAssigneeNum:1,
         minAssigneeNum:0,
         assigneeShowType: '1',
-        isCandidate: '',
+        isCandidate: 0,
         isMultiIntance:0,
         arriveNotification:0,
         doneCondition:0,
@@ -218,6 +217,9 @@ export default {
         } else {
           value = this.bpmnElement?.businessObject[key]|| this.bpmnElement?.businessObject.$attrs[key] || this.defaultTaskForm[key];
         }
+        if (key === "isMultiIntance") {
+          value = this.bpmnElement?.businessObject.loopCharacteristics ? 1 : 0;
+        }
         console.log("this.bpmnElement?.businessObject",this.bpmnElement?.businessObject);
         this.$set(this.userTaskForm, key, value);
       }
@@ -242,7 +244,7 @@ export default {
     //  if (key === "candidateUsers" || key === "candidateGroups") {
     //    taskAttr[key] = this.userTaskForm[key] && this.userTaskForm[key].length ? this.userTaskForm[key].join() : null;
    //   } else {
-        taskAttr[key] = this.userTaskForm[key] || null;
+        taskAttr[key] = this.userTaskForm[key] ?? null;
     //  }
       window.bpmnInstances.modeling.updateProperties(this.bpmnElement, taskAttr);
     }
@@ -253,7 +255,7 @@ export default {
   mounted() {
     this.loadDict()
     this.$nextTick(() => {
-      let operateArr = ['maxAssigneeNum', 'minAssigneeNum'];
+      let operateArr = ['maxAssigneeNum', 'minAssigneeNum', 'assigneeHistoryFirst', 'taskAutoSubmit', 'assigneeShowType', 'isCandidate', 'isMultiIntance'];
       operateArr.forEach(item => {
         this.updateElementTask(item)
       })

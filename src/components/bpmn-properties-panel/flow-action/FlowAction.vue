@@ -5,7 +5,7 @@
       size="small"
       rowKey="id"
       :columns="elementPropertyColumns"
-      :scroll="{ x: 500, y: 240 }"
+      :scroll="{ x: 400, y: 240 }"
       bordered
     >
       <span slot="actions" slot-scope="text, record, index">
@@ -70,7 +70,7 @@ const elementPropertyColumns = [
     title: '是否默认值',
     dataIndex: 'isDefault',
     key: 'isDefault',
-    minWidth: '100px',
+    minWidth: '90px',
     scopedSlots: { customRender: 'isDefault' },
     customRender: (item) => {
       return item ? '是' : '否'
@@ -135,11 +135,11 @@ export default {
       // 复制 显示
      // this.elementPropertyList = JSON.parse(JSON.stringify(this.bpmnElementPropertyList ?? []));
       this.elementPropertyList = this.bpmnElementPropertyList.map(current => Object.assign({"isDefault":current.$attrs.isDefault},current));
-      console.log("elementPropertyList++++++++", this.elementPropertyList);
+      console.log("elementPropertyList", this.elementPropertyList);
     },
     openAttributesForm(attr, index) {
       this.editingPropertyIndex = index;
-      this.propertyForm = index === -1 ? {} : JSON.parse(JSON.stringify(attr));
+      this.propertyForm = index === -1 ? this.$options.data.call(this).propertyForm : JSON.parse(JSON.stringify(attr));
       this.propertyFormModelVisible = true;
       this.$nextTick(() => {
         if (this.$refs["attributeFormRef"]) this.$refs["attributeFormRef"].clearValidate();
@@ -169,6 +169,16 @@ export default {
     },
     saveAttribute() {
       // 新建属性字段
+      if (this.editingPropertyIndex > -1) {
+        // 先删除
+        this.elementPropertyList.splice(this.editingPropertyIndex, 1)
+        this.bpmnElementPropertyList.splice(this.editingPropertyIndex, 1);
+        const propertiesObject = window.bpmnInstances.moddle.create(`${this.prefix}:FlowActions`, {
+          values: this.bpmnElementPropertyList
+        });
+        this.updateElementExtensions(propertiesObject);
+        this.resetAttributesList();
+      }
       const newPropertyObject = window.bpmnInstances.moddle.create(`${this.prefix}:FlowAction`, this.propertyForm);
         console.log("newPropertyObject", newPropertyObject);
       // 新建一个属性字段的保存列表

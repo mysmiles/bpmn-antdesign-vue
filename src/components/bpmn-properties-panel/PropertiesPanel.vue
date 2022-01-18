@@ -10,11 +10,11 @@
         <div slot="header" class="panel-tab__title"><a-icon type="message" theme="filled" />消息与信号</div>
         <signal-and-massage />
       </a-collapse-panel>-->
-      <a-collapse-panel name="subProcessTask" v-if="elementType === 'SubProcess' " key="subProcessTask">
+      <a-collapse-panel name="subProcessTask" v-if="elementType === 'CallActivity' " key="subProcessTask">
         <div slot="header" class="panel-tab__title"><a-icon type="check-circle" theme="filled" />子流程任务</div>
         <sub-process-task />
       </a-collapse-panel>
-      <a-collapse-panel name="subProcessVariable" v-if="elementType === 'SubProcess' " key="subProcessVariable">
+      <a-collapse-panel name="subProcessVariable" v-if="elementType === 'CallActivity' " key="subProcessVariable">
         <div slot="header" class="panel-tab__title"><a-icon type="compass" />子流程变量</div>
         <sub-process-variable :id="elementId" :type="elementType" />
       </a-collapse-panel>

@@ -68,3 +68,10 @@ export const fieldType = {
   string: "字符串",
   expression: "表达式"
 };
+
+export const serveTaskType = {
+  classListener: 'Java 类',
+  expressionListener: '表达式',
+  delegateExpressionListener: '代理表达式'
+};
+

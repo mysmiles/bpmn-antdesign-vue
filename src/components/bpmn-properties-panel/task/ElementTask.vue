@@ -27,7 +27,8 @@ export default {
   components: { UserTask, ScriptTask, ReceiveTask },
   props: {
     id: String,
-    type: String
+    type: String,
+    businessObject: Object,
   },
   data() {
     return {

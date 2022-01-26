@@ -154,7 +154,7 @@ export default {
     },
     events: {
       type: Array,
-      default: () => ["element.click"]
+      default: () => ["element.click", "commandStack.shape.create.postExecute"]
     },
     headerButtonSize: {
       type: String,

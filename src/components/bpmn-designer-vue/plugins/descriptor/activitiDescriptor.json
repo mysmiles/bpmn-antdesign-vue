@@ -434,7 +434,7 @@
           "type": "String"
         },
         {
-          "name": "isMultiIntance",
+          "name": "isMultiInstance",
           "isAttr": true,
           "type": "String"
         },
@@ -996,7 +996,8 @@
         "allowedIn": [
           "activiti:ServiceTaskLike",
           "activiti:ExecutionListener",
-          "activiti:TaskListener"
+          "activiti:TaskListener",
+          "bpmn:ServiceTask"
         ]
       },
       "properties": [

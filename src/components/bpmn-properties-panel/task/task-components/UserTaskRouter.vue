@@ -87,7 +87,7 @@
         </a-radio-group>-->
       </a-form-model-item>
       <a-form-model-item label="多实例">
-        <h-switch v-model="userTaskForm.isMultiIntance" @change="updateElementTask('isMultiIntance')" />
+        <h-switch v-model="userTaskForm.isMultiInstance" @change="updateElementTask('isMultiInstance')" />
        </a-form-model-item>
 <!--      <a-form-model-item label="完成条件" v-if="userTaskForm.isMultiIntance === 1">
         <a-input style="width:120px" v-model="userTaskForm.doneCondition" allowClear @change="updateBaseInfo('doneCondition')" ></a-input>
@@ -130,7 +130,8 @@ export default {
   name: "UserTask",
   props: {
     id: String,
-    type: String
+    type: String,
+    businessObject: Object,
   },
   data() {
     let isGreater  = (rule, value, callback) => {
@@ -163,7 +164,7 @@ export default {
         minAssigneeNum:0,
         assigneeShowType: '1',
         isCandidate: 0,
-        isMultiIntance:0,
+        isMultiInstance:0,
         arriveNotification:0,
         doneCondition:0,
         assigneeRouter:"",
@@ -194,6 +195,20 @@ export default {
         this.bpmnElement = window.bpmnInstances.bpmnElement;
         this.$nextTick(() => this.resetTaskForm());
       }
+    },
+    businessObject: {
+      immediate: true,
+      deep: true,
+      handler() {
+        this.bpmnElement = window.bpmnInstances.bpmnElement;
+        this.$nextTick(() => this.resetTaskForm());
+      }
+    },
+    'userTaskForm.isMultiInstance': {
+      immediate: true,
+      handler() {
+        this.$nextTick(() => { this.updateElementTask('isMultiInstance') })
+      }
     }
   },
   components: {
@@ -215,9 +230,9 @@ export default {
         if (key === "candidateUsers" || key === "candidateGroups") {
           value = this.bpmnElement?.businessObject[key] ? this.bpmnElement.businessObject[key].split(",") : [];
         } else {
-          value = this.bpmnElement?.businessObject[key]|| this.bpmnElement?.businessObject.$attrs[key] || this.defaultTaskForm[key];
+          value = this.bpmnElement?.businessObject[key]?? this.bpmnElement?.businessObject.$attrs[key] ?? this.defaultTaskForm[key];
         }
-        if (key === "isMultiIntance") {
+        if (key === "isMultiInstance") {
           value = this.bpmnElement?.businessObject.loopCharacteristics ? 1 : 0;
         }
         console.log("this.bpmnElement?.businessObject",this.bpmnElement?.businessObject);
@@ -240,12 +255,18 @@ export default {
       this.selectUsersIds = selectedRowKeys;
     },
     updateElementTask(key) {
+      if (key === 'isMultiInstance') {
+        if (this.userTaskForm[key] == 1) {
+          const multiLoopInstance = window.bpmnInstances.moddle.create("bpmn:MultiInstanceLoopCharacteristics");
+          window.bpmnInstances.modeling.updateProperties(this.bpmnElement, {
+            loopCharacteristics: multiLoopInstance
+          });
+        } else {
+          window.bpmnInstances.modeling.updateProperties(this.bpmnElement, { loopCharacteristics: null, isMultiInstance: '0' });
+        }
+      }
       const taskAttr = Object.create(null);
-    //  if (key === "candidateUsers" || key === "candidateGroups") {
-    //    taskAttr[key] = this.userTaskForm[key] && this.userTaskForm[key].length ? this.userTaskForm[key].join() : null;
-   //   } else {
-        taskAttr[key] = this.userTaskForm[key] ?? null;
-    //  }
+      taskAttr[key] = this.userTaskForm[key] ?? null;
       window.bpmnInstances.modeling.updateProperties(this.bpmnElement, taskAttr);
     }
   },
@@ -254,12 +275,6 @@ export default {
   },
   mounted() {
     this.loadDict()
-    this.$nextTick(() => {
-      let operateArr = ['maxAssigneeNum', 'minAssigneeNum', 'assigneeHistoryFirst', 'taskAutoSubmit', 'assigneeShowType', 'isCandidate', 'isMultiIntance'];
-      operateArr.forEach(item => {
-        this.updateElementTask(item)
-      })
-    })
   }
 };
 </script>

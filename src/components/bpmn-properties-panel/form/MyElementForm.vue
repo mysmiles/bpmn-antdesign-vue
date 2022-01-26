@@ -258,7 +258,7 @@ export default {
       this.bpmnElementFormList = this.bpmnElementForms.reduce((pre, current) => pre.concat(current.values), []); 
       // 复制 显示
      // this.elementPropertyList = JSON.parse(JSON.stringify(this.bpmnElementPropertyList ?? []));
-      this.taskFormList = this.bpmnElementFormList;
+      this.taskFormList = JSON.parse(JSON.stringify(this.bpmnElementFormList));
     },
     // resetFormList() {
     //   this.bpmnELement = window.bpmnInstances.bpmnElement;

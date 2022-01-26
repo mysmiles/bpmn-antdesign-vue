@@ -14,7 +14,6 @@
           v-model="elementBaseInfo.id"
           :disabled="idEditDisabled || elementBaseInfo.$type === 'bpmn:Process'"
           allowClear
-          @change="updateBaseInfo('id')"
         />
       </a-form-model-item>
       <a-form-model-item label="名称">
@@ -100,7 +99,6 @@
   </div>
 </template>
 <script>
-import { uuid } from 'vue-uuid';
 // import PhoneNumberInput from '@/components/HComponents/PhoneNumberInput';
 
 export default {
@@ -131,7 +129,6 @@ export default {
         if (val) {
           this.$nextTick(() => {
             this.resetBaseInfo();
-            this.changeId()
           });
         }
       }
@@ -156,32 +153,11 @@ export default {
         tenantId:this.bpmnElement.businessObject.$attrs.tenantId,
         variable:this.bpmnElement.businessObject.$attrs.variable
         },this.bpmnElement.businessObject);
-      if (this.elementBaseInfo.$type === 'bpmn:UserTask') {
-        let operArr = ['enableEntrusted', 'enablePrint', 'arriveNotification', 'enableTrack', 'requireComment'];
-        operArr.forEach(item => {
-          this.updateBaseInfo(item)
-        })
-      }
-    },
-    changeId() {
-      if (this.type === 'Process') {
-        return;
-      }
-      let uuidV4 = uuid.v4().replace(/-/g, "");
-      this.elementBaseInfo.id = `${this.type}_${uuidV4}`
-      this.updateBaseInfo('id')
     },
     updateBaseInfo(key) {
       const attrObj = Object.create(null);
       attrObj[key] = this.elementBaseInfo[key];
-      if (key === "id") {
-        window.bpmnInstances.modeling.updateProperties(this.bpmnElement, {
-          id: this.elementBaseInfo[key],
-          di: { id: `${this.elementBaseInfo[key]}_di` }
-        });
-      } else {
-        window.bpmnInstances.modeling.updateProperties(this.bpmnElement, attrObj);
-      }
+      window.bpmnInstances.modeling.updateProperties(this.bpmnElement, attrObj);
     }
   },
   mounted() {

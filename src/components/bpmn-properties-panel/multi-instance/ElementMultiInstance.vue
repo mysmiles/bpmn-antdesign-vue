@@ -82,10 +82,13 @@ export default {
     loopCharacteristics: {
       handler(val) {
         if (['ParallelMultiInstance', 'SequentialMultiInstance'].includes(val)) {
-          this.loopInstanceForm = { ...this.defaultLoopInstanceForm };
-          this.setDefaultValue()
+          setTimeout(() =>{
+            this.loopInstanceForm = { ...this.defaultLoopInstanceForm };
+            this.setDefaultValue()
+          }, 10)
         }
-      }
+      },
+      immediate: true
     }
   },
   methods: {

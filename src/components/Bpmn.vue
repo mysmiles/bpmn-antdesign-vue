@@ -8,52 +8,10 @@
       ref="processDesigner"
       @element-click="elementClick"
       @init-finished="initModeler"
+      @commandStack-shape-create-postExecute="commandStackShapeCreatePostExecute"
     />
     <my-properties-panel ref="my_properties_panel" :key="`penal-${reloadIndex}`" :bpmn-modeler="modeler" :prefix="controlForm.prefix" class="process-panel" />
   </div>
-    <!-- demo config -->
-    <!-- <div class="demo-control-bar">
-      <div class="open-control-dialog" @click="controlDrawerVisible = true"><i class="el-icon-setting"></i></div>
-    </div> -->
-    <!-- <el-drawer :visible.sync="controlDrawerVisible" size="400px" title="偏好设置" append-to-body destroy-on-close>
-      <el-form :model="controlForm" size="small" label-width="100px" class="control-form" @submit.native.prevent>
-        <el-form-item label="流程ID">
-          <el-input v-model="controlForm.processId" @change="reloadProcessDesigner" />
-        </el-form-item>
-        <el-form-item label="流程名称">
-          <el-input v-model="controlForm.processName" @change="reloadProcessDesigner" />
-        </el-form-item>
-        <el-form-item label="流转模拟">
-          <el-switch v-model="controlForm.simulation" inactive-text="停用" active-text="启用" @change="reloadProcessDesigner" />
-        </el-form-item>
-        <el-form-item label="禁用双击">
-          <el-switch v-model="controlForm.labelEditing" inactive-text="停用" active-text="启用" @change="changeLabelEditingStatus" />
-        </el-form-item>
-        <el-form-item label="隐藏label">
-          <el-switch v-model="controlForm.labelVisible" inactive-text="停用" active-text="启用" @change="changeLabelVisibleStatus" />
-        </el-form-item>
-        <el-form-item label="流程引擎">
-          <el-radio-group v-model="controlForm.prefix" @change="reloadProcessDesigner(true)">
-            <el-radio label="camunda">camunda</el-radio>
-            <el-radio label="flowable">flowable</el-radio>
-            <el-radio label="activiti">activiti</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="工具栏">
-          <el-radio-group v-model="controlForm.headerButtonSize">
-            <el-radio label="mini">mini</el-radio>
-            <el-radio label="small">small</el-radio>
-            <el-radio label="medium">medium</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
-    </el-drawer> -->
-
-    <!-- <div class="info-tip">
-      <p>注：activiti 好像不支持表单配置，控制台可能会报错</p>
-      <p>更多配置请查看源码：<a href="https://github.com/miyuesc/bpmn-process-designer">MiyueSC/bpmn-process-designer</a></p>
-      <p>疑问请在此留言：<a href="https://github.com/miyuesc/bpmn-process-designer/issues/16">MiyueSC/bpmn-process-designer/issues</a></p>
-    </div> --> 
 </template>
 
 <script>
@@ -64,10 +22,8 @@ import CustomRenderer from "@/modules/custom-renderer";
 import CustomContentPadProvider from "@/components/bpmn-designer-vue/plugins/content-pad";
 // 自定义左侧菜单（修改 默认任务 为 用户任务）
 import CustomPaletteProvider from "@/components/bpmn-designer-vue/plugins/palette";
-//import BpmnDesignerVue from './bpmn-designer-vue/BpmnDesignerVue.vue';
-//import xmlObj2json from "./utils/xml2json";
-// 自定义侧边栏
- //import MyProcessPanel from "../package/process-panel/ProcessPanel";
+import { uuid } from 'vue-uuid';
+import { defaultValue } from '@/components/bpmn-designer-vue/plugins/defaultValueSetting/defaultValue';
 
 export default {
   name: "Bpmn",
@@ -155,6 +111,17 @@ export default {
       //     extensionElements
       //   });
       // }
+    },
+    commandStackShapeCreatePostExecute(element, event) {
+      let currentElement = event.context.shape;
+      const attrObj = Object.create(null);
+      let uuidV4 = uuid.v4().replace(/-/g, "");
+      attrObj.id = `${currentElement.type.split(':')[1]}_${uuidV4}`
+      window.bpmnInstances.modeling.updateProperties(currentElement, {
+        id: attrObj.id,
+        di: { id: `${attrObj.id}_di` }
+      });
+      return defaultValue(currentElement)
     }
   }
 };

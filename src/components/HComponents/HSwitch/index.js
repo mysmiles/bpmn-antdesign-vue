@@ -24,7 +24,7 @@ export default {
   watch: {
     'value': {
       handler(val) {
-        this.isCheck = val === this.activeValue
+        this.isCheck = val == this.activeValue
       },
       immediate: true
     }
@@ -47,7 +47,7 @@ export default {
   render() {
     const props = {}
     Object.keys(S.props).forEach(k => {
-      if (k === 'value') {
+      if (k == 'value') {
         props[k] = this.$data.isCheck;
         return props[k];
       }

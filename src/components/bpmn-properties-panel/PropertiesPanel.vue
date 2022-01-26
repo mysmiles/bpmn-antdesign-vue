@@ -28,11 +28,15 @@
       </a-collapse-panel>
       <a-collapse-panel name="task" v-if="elementType.indexOf('Task') !== -1 && elementType !== 'ServiceTask'" key="task">
         <div slot="header" class="panel-tab__title"><a-icon type="schedule" theme="filled" />任务/参与者</div>
-        <element-task :id="elementId" :type="elementType" />
+        <element-task :id="elementId" :type="elementType" :business-object="elementBusinessObject" />
       </a-collapse-panel>
-      <a-collapse-panel name="multiInstance" v-if="elementType.indexOf('Task') !== -1" key="multiInstance">
+      <a-collapse-panel name="multiInstance" v-if="elementType.indexOf('Task') !== -1 && elementType !== 'ServiceTask'" key="multiInstance">
         <div slot="header" class="panel-tab__title"><a-icon type="radar-chart" />多实例</div>
         <element-multi-instance :business-object="elementBusinessObject" :type="elementType" />
+      </a-collapse-panel>
+      <a-collapse-panel name="serveTask" v-if="elementType === 'ServiceTask'" key="serveTask">
+        <div slot="header" class="panel-tab__title"><a-icon type="bell" theme="filled" />服务任务</div>
+        <serve-task :id="elementId" :type="elementType" />
       </a-collapse-panel>
       <a-collapse-panel name="audit" v-if="elementType === 'UserTask'"  key="audit">
         <div slot="header" class="panel-tab__title"><a-icon type="check-circle" theme="filled" />审核菜单</div>
@@ -71,6 +75,8 @@ import ElementForm from "./form/MyElementForm";
 import UserTaskListeners from "./listeners/UserTaskListeners";
 import SubProcessTask from './sub-process-task/SubProcessTask';
 import SubProcessVariable from './sub-process-variable/SubProcessVariable';
+// import { changeMultiInstance } from '@/components/bpmn-designer-vue/plugins/defaultValueSetting/defaultValue';
+import ServeTask from '@/components/bpmn-properties-panel/task/task-components/ServeTask';
 /**
  * 侧边栏
  * @Author MiyueFE
@@ -92,7 +98,8 @@ export default {
     ElementOtherConfig,
     ElementBaseInfo,
     SubProcessTask,
-    SubProcessVariable
+    SubProcessVariable,
+    ServeTask
   },
   componentName: "MyPropertiesPanel",
   props: {
@@ -171,6 +178,9 @@ export default {
         // 保证 修改 "默认流转路径" 类似需要修改多个元素的事件发生的时候，更新表单的元素与原选中元素不一致。
         if (element && element.id === this.elementId) {
           this.initFormOnChanged(element);
+        }
+        if (element && element.id === this.elementId && element.id.indexOf('UserTask') !== -1) {
+          this.activeTab = [ ...this.activeTab, 'task', 'multiInstance' ]
         }
       });
     },

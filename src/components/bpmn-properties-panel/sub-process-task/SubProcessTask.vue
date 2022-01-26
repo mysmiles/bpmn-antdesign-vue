@@ -48,15 +48,15 @@ export default {
   mounted() {
     let $parent = this.$root.$children[0].$refs.bpmn.$refs.my_properties_panel
     this.elementBaseInfo = Object.assign($parent.$refs['element_base_info'].elementBaseInfo, this.defaultValue);
-    this.updatePartBaseInfo()
+    // this.updatePartBaseInfo()
   },
   methods: {
-    updatePartBaseInfo() {
+    /*updatePartBaseInfo() {
       let operArr = ['callActivitiType', 'binding'];
       operArr.forEach(item => {
         this.updateBaseInfo(item)
       })
-    },
+    },*/
     updateBaseInfo(key) {
       this.$bus.emit('changeBaseInfo', { elementBaseInfo: this.elementBaseInfo, key: key })
     }

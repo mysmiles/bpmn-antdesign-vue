@@ -106,7 +106,7 @@
 
 <script>
 import { serveTaskType, fieldType } from '../../listeners/utilSelf';
-import { createListenerObject, updateElementExtensions } from '@/components/bpmn/utils';
+import { createListenerObject, updateElementExtensions } from '../../../utils';
 const fieldsListOfListenerColumns = [
   {
     title: '序号',
@@ -166,7 +166,7 @@ export default {
       }
     },
     'listenerForm.listenerType': {
-      handler(val) {
+      handler() {
         this.$set(this.listenerForm, 'class', null);
         this.updateProperty('class');
         this.$set(this.listenerForm, 'expression', null);

@@ -101,7 +101,7 @@
           </a-form-model-item> -->
           <a-form-model-item prop="groovyName" key="listener.groovyName" label="Groovy脚本">
             <a-col :span="12">
-              <a-input v-model="listenerForm.groovyName"  allow-clear />
+              <a-input v-model="groovyName" allow-clear />
             </a-col>
             <a-col :span="4">
               <a-button type="primary" @click="openGroovyForm">选择</a-button>
@@ -451,7 +451,6 @@ export default {
           return;
        }
       this.$set(this.listenerForm, 'groovyKeyId', this.selects[0].id)
-      this.$set(this.listenerForm, 'groovyName', this.selects[0].beanName)
       this.groovyListDialogVisible = false;
     },
     // 保存监听器注入字段

@@ -8,7 +8,7 @@
       ref="listenerFormRef"
       @submit.native.prevent>
       <a-form-model-item label="监听器类型" prop="listenerType" :rules="{ required: true, message: '请选择监听器类型', trigger: ['blur', 'change'] }">
-        <a-select v-model="listenerForm.listenerType">
+        <a-select v-model="listenerForm.listenerType" @change="updatePropertyType">
           <a-select-option v-for="i in Object.keys(serveTaskType)" :key="i" :value="i">{{ serveTaskType[i] }}</a-select-option>
         </a-select>
       </a-form-model-item>
@@ -164,8 +164,8 @@ export default {
       handler(val) {
         val && val.length && this.$nextTick(() => this.resetListenersList());
       }
-    },
-    'listenerForm.listenerType': {
+    }
+    /*'listenerForm.listenerType': {
       handler() {
         this.$set(this.listenerForm, 'class', null);
         this.updateProperty('class');
@@ -174,7 +174,7 @@ export default {
         this.$set(this.listenerForm, 'delegateExpression', null);
         this.updateProperty('delegateExpression');
       }
-    }
+    }*/
   },
   data() {
     return {
@@ -197,6 +197,7 @@ export default {
   methods: {
     resetListenersList() {
       this.bpmnElement = window.bpmnInstances.bpmnElement;
+      this.listenerForm = this.parseXml(this.bpmnElement);
       this.otherExtensionList = [];
       this.bpmnElementListeners =
         this.bpmnElement.businessObject?.extensionElements?.values?.filter(ex => ex.$type === `${this.prefix}:Field`) ?? [];
@@ -207,6 +208,14 @@ export default {
           fieldType: item.string ? 'string' : 'expression'
         };
       });
+    },
+    parseXml(element) {
+      console.log(element);
+      const businessObject = element.businessObject;
+      return {
+        ...businessObject,
+        listenerType: businessObject.class ? 'classListener' : businessObject.expression ? 'expressionListener' : businessObject.delegateExpression ? 'delegateExpressionListener' : ''
+      };
     },
     openListenerFieldForm(field, index) {
       this.listenerFieldForm = field ? JSON.parse(JSON.stringify(field)) : {};
@@ -282,6 +291,14 @@ export default {
     updateProperty(key) {
       const attrObj = Object.create(null);
       attrObj[key] = this.listenerForm[key];
+      window.bpmnInstances.modeling.updateProperties(this.bpmnElement, attrObj);
+    },
+    updatePropertyType() {
+      const attrObj = {
+        class: null,
+        expression: null,
+        delegateExpression: null
+      };
       window.bpmnInstances.modeling.updateProperties(this.bpmnElement, attrObj);
     },
     updateFiled(otherList) {
